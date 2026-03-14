@@ -1,216 +1,283 @@
+import { useMemo } from 'react'
+import { useForm } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
+
+import { PageIntro } from '@/components/shared/page-intro'
+import { SectionCard } from '@/components/ui/section-card'
+import { PrimaryButton } from '@/components/ui/primary-button'
+import { SecondaryButton } from '@/components/ui/secondary-button'
+import { TextInput } from '@/components/forms/text-input'
+import { SelectField } from '@/components/forms/select-field'
+import { TextAreaField } from '@/components/forms/text-area-field'
+
+import {
+  iphonePurchaseSchema,
+  type IphonePurchaseFormValues,
+} from '@/features/iphone-purchases/schemas/iphone-purchase-schema'
+
 export function NewIphonePurchasePage() {
+  const {
+    register,
+    handleSubmit,
+    watch,
+    formState: { errors, isSubmitting },
+  } = useForm<IphonePurchaseFormValues>({
+    resolver: zodResolver(iphonePurchaseSchema),
+    defaultValues: {
+      model: '',
+      storage: '128GB',
+      color: '',
+      version: '',
+      notes: '',
+      marketplace: 'Xianyu',
+      agent: 'ACBuy',
+      paymentMethod: 'CoinPal / Bybit / USDT',
+      status: 'Aguardando envio',
+      deviceCost: '',
+      internalShipping: '',
+      internationalShipping: '',
+      extraFees: '',
+      estimatedSalePrice: '',
+    },
+  })
+
+  const deviceCost = watch('deviceCost')
+  const internalShipping = watch('internalShipping')
+  const internationalShipping = watch('internationalShipping')
+  const extraFees = watch('extraFees')
+  const estimatedSalePrice = watch('estimatedSalePrice')
+
+  const parseCurrency = (value: string) => {
+    const normalized = value
+      .replace(/\./g, '')
+      .replace(',', '.')
+      .replace(/[^\d.-]/g, '')
+
+    const parsed = Number(normalized)
+    return Number.isNaN(parsed) ? 0 : parsed
+  }
+
+  const formatCurrency = (value: number) =>
+    value.toLocaleString('pt-BR', {
+      style: 'currency',
+      currency: 'BRL',
+    })
+
+  const totals = useMemo(() => {
+    const device = parseCurrency(deviceCost || '')
+    const internal = parseCurrency(internalShipping || '')
+    const international = parseCurrency(internationalShipping || '')
+    const extra = parseCurrency(extraFees || '')
+    const estimatedSale = parseCurrency(estimatedSalePrice || '')
+
+    const fees = internal + international + extra
+    const totalCost = device + fees
+    const estimatedProfit = estimatedSale - totalCost
+
+    return {
+      device,
+      fees,
+      totalCost,
+      estimatedSale,
+      estimatedProfit,
+    }
+  }, [
+    deviceCost,
+    internalShipping,
+    internationalShipping,
+    extraFees,
+    estimatedSalePrice,
+  ])
+
+  const onSubmit = async (data: IphonePurchaseFormValues) => {
+    console.log('Dados da compra:', data)
+    alert('Compra validada com sucesso. Próximo passo: salvar no Supabase.')
+  }
+
   return (
     <div className="space-y-6">
-      <section className="rounded-3xl border border-white/10 bg-white/5 p-6 shadow-xl backdrop-blur">
-        <div>
-          <p className="text-sm uppercase tracking-[0.18em] text-slate-400">
-            Cadastro de compra
-          </p>
-          <h2 className="mt-2 text-2xl font-semibold text-white">
-            Nova compra de iPhone
-          </h2>
-          <p className="mt-2 text-sm text-slate-400">
-            Registre o aparelho, origem da compra, custos envolvidos e projeção de revenda.
-          </p>
-        </div>
-      </section>
+      <PageIntro
+        eyebrow="Cadastro de compra"
+        title="Nova compra de iPhone"
+        description="Registre o aparelho, origem da compra, custos envolvidos e projeção de revenda."
+      />
 
-      <section className="grid gap-6 xl:grid-cols-[1.5fr_0.9fr]">
+      <form
+        onSubmit={handleSubmit(onSubmit)}
+        className="grid gap-6 xl:grid-cols-[1.5fr_0.9fr]"
+      >
         <div className="space-y-6">
-          <div className="rounded-3xl border border-white/10 bg-white/5 p-6 shadow-xl backdrop-blur">
-            <h3 className="text-lg font-semibold text-white">Informações do aparelho</h3>
+          <SectionCard title="Informações do aparelho">
+            <div className="grid gap-4 md:grid-cols-2">
+              <TextInput
+                label="Modelo"
+                placeholder="Ex: iPhone 13 Pro"
+                error={errors.model?.message}
+                {...register('model')}
+              />
 
-            <div className="mt-5 grid gap-4 md:grid-cols-2">
-              <div>
-                <label className="mb-2 block text-sm text-slate-300">Modelo</label>
-                <input
-                  type="text"
-                  placeholder="Ex: iPhone 13 Pro"
-                  className="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-white outline-none placeholder:text-slate-500 focus:border-blue-400/40"
-                />
-              </div>
+              <SelectField
+                label="Armazenamento"
+                error={errors.storage?.message}
+                {...register('storage')}
+              >
+                <option value="128GB">128GB</option>
+                <option value="256GB">256GB</option>
+                <option value="512GB">512GB</option>
+                <option value="1TB">1TB</option>
+              </SelectField>
 
-              <div>
-                <label className="mb-2 block text-sm text-slate-300">Armazenamento</label>
-                <select className="w-full rounded-2xl border border-white/10 bg-[#1b2438] px-4 py-3 text-white outline-none focus:border-blue-400/40">
-                  <option>128GB</option>
-                  <option>256GB</option>
-                  <option>512GB</option>
-                  <option>1TB</option>
-                </select>
-              </div>
+              <TextInput
+                label="Cor"
+                placeholder="Ex: Green"
+                error={errors.color?.message}
+                {...register('color')}
+              />
 
-              <div>
-                <label className="mb-2 block text-sm text-slate-300">Cor</label>
-                <input
-                  type="text"
-                  placeholder="Ex: Green"
-                  className="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-white outline-none placeholder:text-slate-500 focus:border-blue-400/40"
-                />
-              </div>
-
-              <div>
-                <label className="mb-2 block text-sm text-slate-300">Versão</label>
-                <input
-                  type="text"
-                  placeholder="Ex: US Version / Factory Unlocked"
-                  className="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-white outline-none placeholder:text-slate-500 focus:border-blue-400/40"
-                />
-              </div>
+              <TextInput
+                label="Versão"
+                placeholder="Ex: US Version / Factory Unlocked"
+                error={errors.version?.message}
+                {...register('version')}
+              />
 
               <div className="md:col-span-2">
-                <label className="mb-2 block text-sm text-slate-300">Observações</label>
-                <textarea
+                <TextAreaField
+                  label="Observações"
                   rows={4}
                   placeholder="Ex: bateria, condição estética, Face ID, histórico do aparelho..."
-                  className="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-white outline-none placeholder:text-slate-500 focus:border-blue-400/40"
+                  error={errors.notes?.message}
+                  {...register('notes')}
                 />
               </div>
             </div>
-          </div>
+          </SectionCard>
 
-          <div className="rounded-3xl border border-white/10 bg-white/5 p-6 shadow-xl backdrop-blur">
-            <h3 className="text-lg font-semibold text-white">Origem e logística</h3>
+          <SectionCard title="Origem e logística">
+            <div className="grid gap-4 md:grid-cols-2">
+              <TextInput
+                label="Marketplace"
+                placeholder="Ex: Xianyu"
+                error={errors.marketplace?.message}
+                {...register('marketplace')}
+              />
 
-            <div className="mt-5 grid gap-4 md:grid-cols-2">
-              <div>
-                <label className="mb-2 block text-sm text-slate-300">Marketplace</label>
-                <input
-                  type="text"
-                  placeholder="Ex: Xianyu"
-                  className="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-white outline-none placeholder:text-slate-500 focus:border-blue-400/40"
-                />
-              </div>
+              <TextInput
+                label="Agente"
+                placeholder="Ex: ACBuy"
+                error={errors.agent?.message}
+                {...register('agent')}
+              />
 
-              <div>
-                <label className="mb-2 block text-sm text-slate-300">Agente</label>
-                <input
-                  type="text"
-                  placeholder="Ex: ACBuy"
-                  className="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-white outline-none placeholder:text-slate-500 focus:border-blue-400/40"
-                />
-              </div>
+              <TextInput
+                label="Meio de pagamento"
+                placeholder="Ex: CoinPal / Bybit / USDT"
+                error={errors.paymentMethod?.message}
+                {...register('paymentMethod')}
+              />
 
-              <div>
-                <label className="mb-2 block text-sm text-slate-300">Meio de pagamento</label>
-                <input
-                  type="text"
-                  placeholder="Ex: CoinPal / Bybit / USDT"
-                  className="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-white outline-none placeholder:text-slate-500 focus:border-blue-400/40"
-                />
-              </div>
-
-              <div>
-                <label className="mb-2 block text-sm text-slate-300">Status</label>
-                <select className="w-full rounded-2xl border border-white/10 bg-[#1b2438] px-4 py-3 text-white outline-none focus:border-blue-400/40">
-                  <option>Aguardando envio</option>
-                  <option>Em transporte</option>
-                  <option>Em warehouse</option>
-                  <option>Entregue</option>
-                  <option>Finalizado</option>
-                </select>
-              </div>
+              <SelectField
+                label="Status"
+                error={errors.status?.message}
+                {...register('status')}
+              >
+                <option value="Aguardando envio">Aguardando envio</option>
+                <option value="Em transporte">Em transporte</option>
+                <option value="Em warehouse">Em warehouse</option>
+                <option value="Entregue">Entregue</option>
+                <option value="Finalizado">Finalizado</option>
+              </SelectField>
             </div>
-          </div>
+          </SectionCard>
 
-          <div className="rounded-3xl border border-white/10 bg-white/5 p-6 shadow-xl backdrop-blur">
-            <h3 className="text-lg font-semibold text-white">Custos da operação</h3>
+          <SectionCard title="Custos da operação">
+            <div className="grid gap-4 md:grid-cols-2">
+              <TextInput
+                label="Preço do aparelho"
+                placeholder="R$ 0,00"
+                error={errors.deviceCost?.message}
+                {...register('deviceCost')}
+              />
 
-            <div className="mt-5 grid gap-4 md:grid-cols-2">
-              <div>
-                <label className="mb-2 block text-sm text-slate-300">Preço do aparelho</label>
-                <input
-                  type="text"
-                  placeholder="R$ 0,00"
-                  className="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-white outline-none placeholder:text-slate-500 focus:border-blue-400/40"
-                />
-              </div>
+              <TextInput
+                label="Frete interno / warehouse"
+                placeholder="R$ 0,00"
+                error={errors.internalShipping?.message}
+                {...register('internalShipping')}
+              />
 
-              <div>
-                <label className="mb-2 block text-sm text-slate-300">Frete interno / warehouse</label>
-                <input
-                  type="text"
-                  placeholder="R$ 0,00"
-                  className="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-white outline-none placeholder:text-slate-500 focus:border-blue-400/40"
-                />
-              </div>
+              <TextInput
+                label="Frete internacional"
+                placeholder="R$ 0,00"
+                error={errors.internationalShipping?.message}
+                {...register('internationalShipping')}
+              />
 
-              <div>
-                <label className="mb-2 block text-sm text-slate-300">Frete internacional</label>
-                <input
-                  type="text"
-                  placeholder="R$ 0,00"
-                  className="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-white outline-none placeholder:text-slate-500 focus:border-blue-400/40"
-                />
-              </div>
-
-              <div>
-                <label className="mb-2 block text-sm text-slate-300">Taxas extras</label>
-                <input
-                  type="text"
-                  placeholder="R$ 0,00"
-                  className="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-white outline-none placeholder:text-slate-500 focus:border-blue-400/40"
-                />
-              </div>
+              <TextInput
+                label="Taxas extras"
+                placeholder="R$ 0,00"
+                error={errors.extraFees?.message}
+                {...register('extraFees')}
+              />
             </div>
-          </div>
+          </SectionCard>
         </div>
 
         <aside className="space-y-6">
-          <div className="rounded-3xl border border-white/10 bg-white/5 p-6 shadow-xl backdrop-blur">
-            <h3 className="text-lg font-semibold text-white">Resumo da compra</h3>
-
-            <div className="mt-5 space-y-4">
+          <SectionCard title="Resumo da compra">
+            <div className="space-y-4">
               <div className="flex items-center justify-between text-sm">
                 <span className="text-slate-400">Custo do aparelho</span>
-                <span className="text-white">R$ 2.050,00</span>
+                <span className="text-white">{formatCurrency(totals.device)}</span>
               </div>
 
               <div className="flex items-center justify-between text-sm">
                 <span className="text-slate-400">Fretes + taxas</span>
-                <span className="text-white">R$ 330,00</span>
+                <span className="text-white">{formatCurrency(totals.fees)}</span>
               </div>
 
               <div className="border-t border-white/10 pt-4">
                 <div className="flex items-center justify-between">
                   <span className="text-slate-300">Custo total</span>
-                  <span className="text-xl font-semibold text-white">R$ 2.380,00</span>
+                  <span className="text-xl font-semibold text-white">
+                    {formatCurrency(totals.totalCost)}
+                  </span>
                 </div>
               </div>
             </div>
-          </div>
+          </SectionCard>
 
-          <div className="rounded-3xl border border-white/10 bg-white/5 p-6 shadow-xl backdrop-blur">
-            <h3 className="text-lg font-semibold text-white">Revenda</h3>
-
-            <div className="mt-5">
-              <label className="mb-2 block text-sm text-slate-300">Preço estimado de venda</label>
-              <input
-                type="text"
-                placeholder="R$ 0,00"
-                className="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-white outline-none placeholder:text-slate-500 focus:border-blue-400/40"
-              />
-            </div>
+          <SectionCard title="Revenda">
+            <TextInput
+              label="Preço estimado de venda"
+              placeholder="R$ 0,00"
+              error={errors.estimatedSalePrice?.message}
+              {...register('estimatedSalePrice')}
+            />
 
             <div className="mt-5 rounded-2xl bg-white/5 p-4">
               <p className="text-sm text-slate-400">Lucro estimado</p>
-              <p className="mt-2 text-2xl font-bold text-emerald-400">R$ 970,00</p>
+              <p
+                className={`mt-2 text-2xl font-bold ${
+                  totals.estimatedProfit >= 0 ? 'text-emerald-400' : 'text-rose-400'
+                }`}
+              >
+                {formatCurrency(totals.estimatedProfit)}
+              </p>
             </div>
-          </div>
+          </SectionCard>
 
-          <div className="rounded-3xl border border-white/10 bg-white/5 p-6 shadow-xl backdrop-blur">
+          <SectionCard>
             <div className="flex flex-col gap-3">
-              <button className="rounded-2xl border border-blue-400/30 bg-blue-500/20 px-4 py-3 text-sm font-medium text-blue-300 transition hover:bg-blue-500/30">
-                Salvar compra
-              </button>
+              <PrimaryButton type="submit" disabled={isSubmitting}>
+                {isSubmitting ? 'Salvando...' : 'Salvar compra'}
+              </PrimaryButton>
 
-              <button className="rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm font-medium text-slate-200 transition hover:bg-white/10">
-                Salvar como rascunho
-              </button>
+              <SecondaryButton type="button">Salvar como rascunho</SecondaryButton>
             </div>
-          </div>
+          </SectionCard>
         </aside>
-      </section>
+      </form>
     </div>
   )
 }

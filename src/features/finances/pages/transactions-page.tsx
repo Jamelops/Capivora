@@ -1,3 +1,6 @@
+import { SectionCard } from '@/components/ui/section-card'
+import { StatCard } from '@/components/ui/stat-card'
+
 export function TransactionsPage() {
   const categories = [
     { name: 'Alimentação', total: 'R$ 820,00', color: 'bg-amber-400' },
@@ -66,35 +69,34 @@ export function TransactionsPage() {
   return (
     <div className="space-y-6">
       <section className="grid gap-4 md:grid-cols-3">
-        <div className="rounded-3xl border border-white/10 bg-white/5 p-5 shadow-xl backdrop-blur">
-          <p className="text-sm text-slate-400">Receitas do mês</p>
-          <h3 className="mt-3 text-3xl font-bold text-white">R$ 8.420,00</h3>
-          <p className="mt-2 text-sm text-emerald-400">Entradas consolidadas</p>
-        </div>
+        <StatCard
+          label="Receitas do mês"
+          value="R$ 8.420,00"
+          hint="Entradas consolidadas"
+          hintColor="text-emerald-400"
+        />
 
-        <div className="rounded-3xl border border-white/10 bg-white/5 p-5 shadow-xl backdrop-blur">
-          <p className="text-sm text-slate-400">Despesas do mês</p>
-          <h3 className="mt-3 text-3xl font-bold text-white">R$ 4.230,00</h3>
-          <p className="mt-2 text-sm text-rose-400">Saídas por categorias</p>
-        </div>
+        <StatCard
+          label="Despesas do mês"
+          value="R$ 4.230,00"
+          hint="Saídas por categorias"
+          hintColor="text-rose-400"
+        />
 
-        <div className="rounded-3xl border border-white/10 bg-white/5 p-5 shadow-xl backdrop-blur">
-          <p className="text-sm text-slate-400">Saldo do mês</p>
-          <h3 className="mt-3 text-3xl font-bold text-white">R$ 4.190,00</h3>
-          <p className="mt-2 text-sm text-blue-400">Resultado líquido atual</p>
-        </div>
+        <StatCard
+          label="Saldo do mês"
+          value="R$ 4.190,00"
+          hint="Resultado líquido atual"
+          hintColor="text-blue-400"
+        />
       </section>
 
       <section className="grid gap-6 xl:grid-cols-[1.1fr_1.6fr]">
-        <div className="rounded-3xl border border-white/10 bg-white/5 p-6 shadow-xl backdrop-blur">
-          <div>
-            <h2 className="text-2xl font-semibold text-white">Categorias</h2>
-            <p className="mt-1 text-sm text-slate-400">
-              Acompanhe para onde seu dinheiro está indo.
-            </p>
-          </div>
-
-          <div className="mt-6 space-y-4">
+        <SectionCard
+          title="Categorias"
+          description="Acompanhe para onde seu dinheiro está indo."
+        >
+          <div className="space-y-4">
             {categories.map((category) => (
               <div
                 key={category.name}
@@ -112,17 +114,12 @@ export function TransactionsPage() {
               </div>
             ))}
           </div>
-        </div>
+        </SectionCard>
 
-        <div className="rounded-3xl border border-white/10 bg-white/5 p-6 shadow-xl backdrop-blur">
-          <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-            <div>
-              <h2 className="text-2xl font-semibold text-white">Histórico financeiro</h2>
-              <p className="mt-1 text-sm text-slate-400">
-                Entradas e saídas pessoais, incluindo movimentações das operações com iPhone.
-              </p>
-            </div>
-
+        <SectionCard
+          title="Histórico financeiro"
+          description="Entradas e saídas pessoais, incluindo movimentações das operações com iPhone."
+          action={
             <div className="flex flex-col gap-3 sm:flex-row">
               <input
                 type="text"
@@ -133,9 +130,9 @@ export function TransactionsPage() {
                 Nova movimentação
               </button>
             </div>
-          </div>
-
-          <div className="mt-6 overflow-hidden rounded-3xl border border-white/10">
+          }
+        >
+          <div className="overflow-hidden rounded-3xl border border-white/10">
             <div className="grid grid-cols-[1.8fr_1fr_1fr_1fr] bg-white/5 px-5 py-4 text-sm text-slate-400">
               <span>Descrição</span>
               <span>Categoria</span>
@@ -163,7 +160,7 @@ export function TransactionsPage() {
               ))}
             </div>
           </div>
-        </div>
+        </SectionCard>
       </section>
     </div>
   )
