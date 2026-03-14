@@ -18,7 +18,7 @@ export const router = createBrowserRouter([
         element: <DashboardPage />,
       },
       {
-        path: routes.transactions,
+        path: routes.finances,
         element: <TransactionsPage />,
       },
       {

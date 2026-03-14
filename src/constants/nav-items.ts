@@ -1,4 +1,4 @@
-import { LayoutDashboard, Receipt, Smartphone, PlusCircle } from 'lucide-react'
+import { LayoutDashboard, Wallet, Smartphone, PlusCircle } from 'lucide-react'
 import { routes } from './routes'
 
 export const navItems = [
@@ -8,9 +8,9 @@ export const navItems = [
     icon: LayoutDashboard,
   },
   {
-    label: 'Transações',
-    path: routes.transactions,
-    icon: Receipt,
+    label: 'Finanças',
+    path: routes.finances,
+    icon: Wallet,
   },
   {
     label: 'Compras de iPhone',
