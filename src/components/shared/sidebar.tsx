@@ -1,6 +1,7 @@
 import { NavLink } from 'react-router-dom'
 import { navItems } from '@/constants/nav-items'
 
+
 export function Sidebar() {
   return (
     <aside className="w-[280px] shrink-0 rounded-3xl border border-white/10 bg-white/5 p-4 shadow-xl backdrop-blur">
