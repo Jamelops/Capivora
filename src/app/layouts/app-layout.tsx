@@ -4,7 +4,7 @@ import { Sidebar } from '@/components/shared/sidebar'
 export function AppLayout() {
   return (
     <div className="min-h-screen bg-transparent text-white">
-      <div className="mx-auto flex min-h-screen w-full max-w-[1600px] gap-8 px-8 py-8 2xl:max-w-[1720px]">
+      <div className="mx-auto flex min-h-screen w-full max-w-[1800px] items-start gap-8 px-6 py-8 2xl:max-w-[1920px]">
         <Sidebar />
 
         <div className="flex-1">
