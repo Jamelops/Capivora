@@ -8,7 +8,7 @@ export function Sidebar() {
         <p className="text-xs uppercase tracking-[0.2em] text-slate-400">
           Sistema
         </p>
-        <h2 className="mt-2 text-2xl font-bold text-white">PhoneLedger</h2>
+        <h2 className="mt-2 text-2xl font-bold text-white">Capivora</h2>
       </div>
 
       <nav className="flex flex-col gap-2">
