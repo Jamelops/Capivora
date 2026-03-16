@@ -1,9 +1,11 @@
+import { useNavigate } from 'react-router-dom'
 import {
   ArrowDownRight,
   ArrowUpRight,
   PiggyBank,
   Plus,
   Receipt,
+  ShoppingBag,
   Smartphone,
   TrendingUp,
   Wallet,
@@ -22,6 +24,8 @@ import {
 } from 'recharts'
 
 import { SectionCard } from '@/components/ui/section-card'
+import { appConfig } from '@/constants/app-config'
+import { routes } from '@/constants/routes'
 
 const financialFlowData = [
   { month: 'Jan', income: 5200, expense: 3100 },
@@ -76,6 +80,21 @@ const recentPurchases = [
   },
 ]
 
+const recentSales = [
+  {
+    title: 'iPhone 13 Pro 128GB',
+    subtitle: 'Vendido para Fulano',
+    status: 'Parcialmente pago',
+    statusColor: 'text-amber-400',
+  },
+  {
+    title: 'Notebook Dell',
+    subtitle: 'Vendido para Ciclano',
+    status: 'Pago',
+    statusColor: 'text-emerald-400',
+  },
+]
+
 const insights = [
   'Gastos com transporte subiram 12% nesta semana.',
   'Sua meta mensal já está 71% concluída.',
@@ -93,6 +112,118 @@ function currencyTooltip(value: number) {
 }
 
 export function DashboardPage() {
+  const navigate = useNavigate()
+  const { iphone, sales } = appConfig.modules
+
+  const topStats = [
+    {
+      title: 'Saldo total',
+      value: 'R$ 12.480,00',
+      hint: '+8.2% este mês',
+      hintClass: 'text-emerald-400',
+      meta: 'em crescimento',
+      metaIcon: <ArrowUpRight size={13} />,
+      icon: (
+        <div className="rounded-2xl bg-emerald-500/15 p-2.5 text-emerald-400">
+          <Wallet size={18} />
+        </div>
+      ),
+    },
+    {
+      title: 'Gastos do mês',
+      value: 'R$ 4.230,00',
+      hint: '12 lançamentos recentes',
+      hintClass: 'text-rose-400',
+      meta: 'mais ativos neste mês',
+      metaIcon: null,
+      icon: (
+        <div className="rounded-2xl bg-rose-500/15 p-2.5 text-rose-400">
+          <ArrowDownRight size={18} />
+        </div>
+      ),
+    },
+    ...(sales
+      ? [
+          {
+            title: 'Vendas registradas',
+            value: '3',
+            hint: 'R$ 3.600,00 pendentes',
+            hintClass: 'text-amber-400',
+            meta: 'módulo ativo',
+            metaIcon: null,
+            icon: (
+              <div className="rounded-2xl bg-violet-500/15 p-2.5 text-violet-400">
+                <ShoppingBag size={18} />
+              </div>
+            ),
+          },
+        ]
+      : []),
+    ...(iphone
+      ? [
+          {
+            title: 'Compras de iPhone',
+            value: '3 registradas',
+            hint: '1 em andamento',
+            hintClass: 'text-sky-400',
+            meta: 'fluxo ativo',
+            metaIcon: null,
+            icon: (
+              <div className="rounded-2xl bg-sky-500/15 p-2.5 text-sky-400">
+                <Smartphone size={18} />
+              </div>
+            ),
+          },
+        ]
+      : []),
+  ]
+
+  const quickActions = [
+    {
+      title: 'Nova transação',
+      subtitle: 'Registrar entrada ou saída',
+      icon: <Plus size={18} />,
+      wrapper: 'bg-emerald-500/15 text-emerald-400',
+      onClick: () => navigate(routes.finances),
+    },
+    ...(sales
+      ? [
+          {
+            title: 'Nova venda',
+            subtitle: 'Registrar produto vendido',
+            icon: <ShoppingBag size={18} />,
+            wrapper: 'bg-violet-500/15 text-violet-400',
+            onClick: () => navigate(routes.sales),
+          },
+        ]
+      : []),
+    ...(iphone
+      ? [
+          {
+            title: 'Nova compra de iPhone',
+            subtitle: 'Adicionar ao fluxo de importação',
+            icon: <Smartphone size={18} />,
+            wrapper: 'bg-sky-500/15 text-sky-400',
+            onClick: () => navigate(routes.newIphonePurchase),
+          },
+        ]
+      : []),
+    {
+      title: 'Ver lançamentos',
+      subtitle: 'Abrir histórico financeiro',
+      icon: <Receipt size={18} />,
+      wrapper: 'bg-violet-500/15 text-violet-400',
+      onClick: () => navigate(routes.finances),
+    },
+    {
+      title: 'Relatórios',
+      subtitle: 'Analisar desempenho do mês',
+      icon: <TrendingUp size={18} />,
+      wrapper: 'bg-amber-500/15 text-amber-400',
+      onClick: () => navigate(routes.home),
+    },
+  ]
+
   return (
     <div className="space-y-6">
       <section className="rounded-3xl border border-white/10 bg-white/5 px-5 py-5 shadow-xl backdrop-blur">
@@ -107,8 +238,7 @@ export function DashboardPage() {
             </h2>
 
             <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-400">
-              Acompanhe fluxo financeiro, metas, categorias e compras recentes
-              em um só lugar.
+              Acompanhe fluxo financeiro, metas, categorias e módulos ativos em um só lugar.
             </p>
 
             <div className="mt-4 flex flex-wrap gap-2.5">
@@ -132,10 +262,10 @@ export function DashboardPage() {
 
               <div className="rounded-2xl border border-violet-500/10 bg-violet-500/10 px-3.5 py-2.5">
                 <p className="text-[10px] uppercase tracking-[0.2em] text-violet-300/80">
-                  Status geral
+                  Módulos ativos
                 </p>
                 <p className="mt-1 text-lg font-semibold text-white">
-                  Mês positivo
+                  {Number(sales) + Number(iphone)} opcionais
                 </p>
               </div>
             </div>
@@ -145,90 +275,55 @@ export function DashboardPage() {
             <div className="rounded-2xl border border-white/5 bg-white/5 px-4 py-3.5">
               <p className="text-sm text-slate-400">Principal insight</p>
               <p className="mt-1.5 font-medium leading-6 text-white">
-                Seu saldo segue positivo e sua meta de economia está próxima do ritmo ideal.
+                Seu saldo segue positivo e a estrutura modular do produto mantém o painel adaptável ao perfil do usuário.
               </p>
             </div>
 
             <div className="rounded-2xl border border-white/5 bg-white/5 px-4 py-3.5">
-              <p className="text-sm text-slate-400">Atenção</p>
+              <p className="text-sm text-slate-400">Status do ambiente</p>
               <p className="mt-1.5 font-medium leading-6 text-white">
-                Transporte e tecnologia foram as categorias com maior aceleração na semana.
+                {sales && iphone
+                  ? 'Os módulos de vendas e iPhone estão ativos neste cenário.'
+                  : sales
+                    ? 'Somente o módulo de vendas está ativo neste cenário.'
+                    : iphone
+                      ? 'Somente o módulo de iPhone está ativo neste cenário.'
+                      : 'Apenas o núcleo financeiro está ativo neste cenário.'}
               </p>
             </div>
           </div>
         </div>
       </section>
 
-      <section className="grid gap-5 xl:grid-cols-3">
-        <div className="rounded-3xl border border-white/10 bg-white/5 px-4 py-4 shadow-xl backdrop-blur">
-          <div className="flex items-start justify-between gap-4">
-            <div>
-              <p className="text-sm text-slate-400">Saldo total</p>
-              <h3 className="mt-2 text-[2rem] font-bold leading-none text-white">
-                R$ 12.480,00
-              </h3>
+      <section className={`grid gap-5 ${topStats.length >= 4 ? 'xl:grid-cols-4' : 'xl:grid-cols-3'}`}>
+        {topStats.map((stat) => (
+          <div
+            key={stat.title}
+            className="rounded-3xl border border-white/10 bg-white/5 px-4 py-4 shadow-xl backdrop-blur"
+          >
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <p className="text-sm text-slate-400">{stat.title}</p>
+                <h3 className="mt-2 text-[2rem] font-bold leading-none text-white">
+                  {stat.value}
+                </h3>
+              </div>
+
+              {stat.icon}
             </div>
 
-            <div className="rounded-2xl bg-emerald-500/15 p-2.5 text-emerald-400">
-              <Wallet size={18} />
+            <div className="mt-4 flex items-center justify-between">
+              <p className={`text-sm ${stat.hintClass}`}>{stat.hint}</p>
+              <div className="flex items-center gap-1 text-xs text-slate-400">
+                {stat.metaIcon}
+                <span>{stat.meta}</span>
+              </div>
             </div>
           </div>
-
-          <div className="mt-4 flex items-center justify-between">
-            <p className="text-sm text-emerald-400">+8.2% este mês</p>
-            <div className="flex items-center gap-1 text-xs text-slate-400">
-              <ArrowUpRight size={13} />
-              <span>em crescimento</span>
-            </div>
-          </div>
-        </div>
-
-        <div className="rounded-3xl border border-white/10 bg-white/5 px-4 py-4 shadow-xl backdrop-blur">
-          <div className="flex items-start justify-between gap-4">
-            <div>
-              <p className="text-sm text-slate-400">Gastos do mês</p>
-              <h3 className="mt-2 text-[2rem] font-bold leading-none text-white">
-                R$ 4.230,00
-              </h3>
-            </div>
-
-            <div className="rounded-2xl bg-rose-500/15 p-2.5 text-rose-400">
-              <ArrowDownRight size={18} />
-            </div>
-          </div>
-
-          <div className="mt-4 flex items-center justify-between">
-            <p className="text-sm text-rose-400">12 lançamentos recentes</p>
-            <div className="flex items-center gap-1 text-xs text-slate-400">
-              <span>mais ativos neste mês</span>
-            </div>
-          </div>
-        </div>
-
-        <div className="rounded-3xl border border-white/10 bg-white/5 px-4 py-4 shadow-xl backdrop-blur">
-          <div className="flex items-start justify-between gap-4">
-            <div>
-              <p className="text-sm text-slate-400">Compras de iPhone</p>
-              <h3 className="mt-2 text-[2rem] font-bold leading-none text-white">
-                3 registradas
-              </h3>
-            </div>
-
-            <div className="rounded-2xl bg-sky-500/15 p-2.5 text-sky-400">
-              <Smartphone size={18} />
-            </div>
-          </div>
-
-          <div className="mt-4 flex items-center justify-between">
-            <p className="text-sm text-sky-400">1 em andamento</p>
-            <div className="flex items-center gap-1 text-xs text-slate-400">
-              <span>fluxo ativo</span>
-            </div>
-          </div>
-        </div>
+        ))}
       </section>
 
-      <section className="grid gap-5 2xl:grid-cols-[1.7fr_1fr]">
+      <section className="grid items-start gap-5 2xl:grid-cols-[1.7fr_1fr]">
         <SectionCard title="Fluxo financeiro dos últimos 6 meses">
           <div className="mb-4 flex flex-wrap items-center gap-4">
             <div className="flex items-center gap-2">
@@ -242,7 +337,7 @@ export function DashboardPage() {
             </div>
           </div>
 
-          <div className="h-[290px] w-full xl:h-[320px]">
+          <div className="h-[260px] w-full xl:h-[280px] 2xl:h-[300px]">
             <ResponsiveContainer width="100%" height="100%">
               <AreaChart data={financialFlowData}>
                 <defs>
@@ -298,51 +393,51 @@ export function DashboardPage() {
           </div>
         </SectionCard>
 
+        <SectionCard title="Ações rápidas">
+          <div className="grid gap-2.5">
+            {quickActions.map((action) => (
+              <button
+                key={action.title}
+                onClick={action.onClick}
+                className="flex items-center gap-3 rounded-2xl bg-white/5 px-4 py-4 text-left transition hover:bg-white/10"
+              >
+                <div className={`rounded-xl p-2 ${action.wrapper}`}>{action.icon}</div>
+                <div>
+                  <p className="font-medium text-white">{action.title}</p>
+                  <p className="text-sm text-slate-400">{action.subtitle}</p>
+                </div>
+              </button>
+            ))}
+          </div>
+        </SectionCard>
+      </section>
+
+      <section className="grid gap-5 2xl:grid-cols-[1.45fr_1fr]">
+        <SectionCard title="Últimas movimentações">
+          <div className="space-y-3.5">
+            {recentTransactions.map((transaction) => (
+              <div
+                key={`${transaction.title}-${transaction.date}`}
+                className="flex items-center justify-between rounded-2xl bg-white/5 px-4 py-4"
+              >
+                <div>
+                  <p className="text-lg font-semibold text-white">{transaction.title}</p>
+                  <p className="text-sm text-slate-400">{transaction.date}</p>
+                </div>
+
+                <p
+                  className={`text-xl font-semibold ${
+                    transaction.type === 'income' ? 'text-emerald-400' : 'text-rose-400'
+                  }`}
+                >
+                  {transaction.value}
+                </p>
+              </div>
+            ))}
+          </div>
+        </SectionCard>
+
         <div className="grid gap-5">
-          <SectionCard title="Ações rápidas">
-            <div className="grid gap-2.5">
-              <button className="flex items-center gap-3 rounded-2xl bg-white/5 px-4 py-4 text-left transition hover:bg-white/10">
-                <div className="rounded-xl bg-emerald-500/15 p-2 text-emerald-400">
-                  <Plus size={18} />
-                </div>
-                <div>
-                  <p className="font-medium text-white">Nova transação</p>
-                  <p className="text-sm text-slate-400">Registrar entrada ou saída</p>
-                </div>
-              </button>
-
-              <button className="flex items-center gap-3 rounded-2xl bg-white/5 px-4 py-4 text-left transition hover:bg-white/10">
-                <div className="rounded-xl bg-sky-500/15 p-2 text-sky-400">
-                  <Smartphone size={18} />
-                </div>
-                <div>
-                  <p className="font-medium text-white">Nova compra de iPhone</p>
-                  <p className="text-sm text-slate-400">Adicionar ao fluxo de importação</p>
-                </div>
-              </button>
-
-              <button className="flex items-center gap-3 rounded-2xl bg-white/5 px-4 py-4 text-left transition hover:bg-white/10">
-                <div className="rounded-xl bg-violet-500/15 p-2 text-violet-400">
-                  <Receipt size={18} />
-                </div>
-                <div>
-                  <p className="font-medium text-white">Ver lançamentos</p>
-                  <p className="text-sm text-slate-400">Abrir histórico financeiro</p>
-                </div>
-              </button>
-
-              <button className="flex items-center gap-3 rounded-2xl bg-white/5 px-4 py-4 text-left transition hover:bg-white/10">
-                <div className="rounded-xl bg-amber-500/15 p-2 text-amber-400">
-                  <TrendingUp size={18} />
-                </div>
-                <div>
-                  <p className="font-medium text-white">Relatórios</p>
-                  <p className="text-sm text-slate-400">Analisar desempenho do mês</p>
-                </div>
-              </button>
-            </div>
-          </SectionCard>
-
           <SectionCard title="Meta financeira do mês">
             <div className="space-y-4">
               <div className="flex items-start justify-between gap-4">
@@ -388,50 +483,55 @@ export function DashboardPage() {
         </div>
       </section>
 
-      <section className="grid gap-5 2xl:grid-cols-[1.45fr_1fr]">
-        <SectionCard title="Últimas movimentações">
-          <div className="space-y-3.5">
-            {recentTransactions.map((transaction) => (
-              <div
-                key={`${transaction.title}-${transaction.date}`}
-                className="flex items-center justify-between rounded-2xl bg-white/5 px-4 py-4"
-              >
-                <div>
-                  <p className="text-lg font-semibold text-white">{transaction.title}</p>
-                  <p className="text-sm text-slate-400">{transaction.date}</p>
-                </div>
-
-                <p
-                  className={`text-xl font-semibold ${
-                    transaction.type === 'income' ? 'text-emerald-400' : 'text-rose-400'
-                  }`}
+      <section
+        className={`grid gap-5 ${
+          iphone && sales
+            ? '2xl:grid-cols-2'
+            : iphone || sales
+              ? '2xl:grid-cols-[1.45fr_1fr]'
+              : 'grid-cols-1'
+        }`}
+      >
+        {iphone && (
+          <SectionCard title="Compras recentes">
+            <div className="space-y-3.5">
+              {recentPurchases.map((purchase) => (
+                <div
+                  key={purchase.title}
+                  className="rounded-2xl bg-white/5 px-4 py-5"
                 >
-                  {transaction.value}
-                </p>
-              </div>
-            ))}
-          </div>
-        </SectionCard>
+                  <p className="text-xl font-semibold text-white">{purchase.title}</p>
+                  <p className="mt-1 text-sm text-slate-400">{purchase.subtitle}</p>
+                  <p className={`mt-4 text-sm font-medium ${purchase.statusColor}`}>
+                    {purchase.status}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </SectionCard>
+        )}
 
-        <SectionCard title="Compras recentes">
-          <div className="space-y-3.5">
-            {recentPurchases.map((purchase) => (
-              <div
-                key={purchase.title}
-                className="rounded-2xl bg-white/5 px-4 py-5"
-              >
-                <p className="text-xl font-semibold text-white">{purchase.title}</p>
-                <p className="mt-1 text-sm text-slate-400">{purchase.subtitle}</p>
-                <p className={`mt-4 text-sm font-medium ${purchase.statusColor}`}>
-                  {purchase.status}
-                </p>
-              </div>
-            ))}
-          </div>
-        </SectionCard>
+        {sales && (
+          <SectionCard title="Vendas recentes">
+            <div className="space-y-3.5">
+              {recentSales.map((sale) => (
+                <div
+                  key={sale.title}
+                  className="rounded-2xl bg-white/5 px-4 py-5"
+                >
+                  <p className="text-xl font-semibold text-white">{sale.title}</p>
+                  <p className="mt-1 text-sm text-slate-400">{sale.subtitle}</p>
+                  <p className={`mt-4 text-sm font-medium ${sale.statusColor}`}>
+                    {sale.status}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </SectionCard>
+        )}
       </section>
 
-      <section className="grid gap-5 xl:grid-cols-2">
+      <section className="grid gap-5 2xl:grid-cols-[1.45fr_1fr]">
         <SectionCard title="Resumo por categorias">
           <div className="grid gap-4 lg:grid-cols-[140px_1fr] lg:items-center">
             <div className="h-[160px] w-full">
