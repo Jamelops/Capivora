@@ -4,7 +4,6 @@ import {
   ArrowUpRight,
   BadgeDollarSign,
   Plus,
-  Receipt,
   Search,
   ShoppingBag,
   UserRound,
