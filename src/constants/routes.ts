@@ -3,8 +3,8 @@ export const routes = {
   login: '/login',
   register: '/register',
   finances: '/finances',
-  categories: '/categories',
   sales: '/sales',
+  newSale: '/sales/new',
   iphonePurchases: '/iphone-purchases',
   newIphonePurchase: '/iphone-purchases/new',
-} as const
+}

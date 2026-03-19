@@ -1,3 +1,5 @@
+import { useMemo, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import {
   ArrowUpRight,
   BadgeDollarSign,
@@ -9,51 +11,125 @@ import {
 } from 'lucide-react'
 
 import { SectionCard } from '@/components/ui/section-card'
+import { PrimaryButton } from '@/components/ui/primary-button'
+import { routes } from '@/constants/routes'
+import { formatCurrency } from '@/lib/formatters'
+
+type SaleStatus = 'Pago' | 'Parcialmente pago' | 'Em aberto'
+
+type Sale = {
+  id: number
+  product: string
+  category: string
+  customer: string
+  date: string
+  total: number
+  received: number
+  pending: number
+  status: SaleStatus
+}
+
+const salesMock: Sale[] = [
+  {
+    id: 1,
+    product: 'Notebook Dell Inspiron',
+    category: 'Informática',
+    customer: 'Carlos Henrique',
+    date: '14/03/2026',
+    total: 4500,
+    received: 2000,
+    pending: 2500,
+    status: 'Parcialmente pago',
+  },
+  {
+    id: 2,
+    product: 'Monitor LG 27"',
+    category: 'Periféricos',
+    customer: 'Marina Souza',
+    date: '10/03/2026',
+    total: 3200,
+    received: 3200,
+    pending: 0,
+    status: 'Pago',
+  },
+  {
+    id: 3,
+    product: 'Teclado Mecânico Keychron',
+    category: 'Periféricos',
+    customer: 'Rafael Lima',
+    date: '08/03/2026',
+    total: 1100,
+    received: 0,
+    pending: 1100,
+    status: 'Em aberto',
+  },
+]
+
+function getStatusStyles(status: SaleStatus) {
+  if (status === 'Pago') {
+    return {
+      textColor: 'text-emerald-400',
+      bgColor: 'bg-emerald-500/15',
+    }
+  }
+
+  if (status === 'Parcialmente pago') {
+    return {
+      textColor: 'text-amber-400',
+      bgColor: 'bg-amber-500/15',
+    }
+  }
+
+  return {
+    textColor: 'text-sky-400',
+    bgColor: 'bg-sky-500/15',
+  }
+}
 
 export function SalesPage() {
-  const sales = [
-    {
-      id: 1,
-      product: 'iPhone 13 Pro 128GB',
-      customer: 'Fulano',
-      date: '14/03/2026',
-      total: 'R$ 4.500,00',
-      received: 'R$ 2.000,00',
-      pending: 'R$ 2.500,00',
-      status: 'Parcialmente pago',
-      statusColor: 'text-amber-400',
-      statusBg: 'bg-amber-500/15',
-    },
-    {
-      id: 2,
-      product: 'Notebook Dell',
-      customer: 'Ciclano',
-      date: '10/03/2026',
-      total: 'R$ 3.200,00',
-      received: 'R$ 3.200,00',
-      pending: 'R$ 0,00',
-      status: 'Pago',
-      statusColor: 'text-emerald-400',
-      statusBg: 'bg-emerald-500/15',
-    },
-    {
-      id: 3,
-      product: 'Monitor LG 27"',
-      customer: 'Beltrano',
-      date: '08/03/2026',
-      total: 'R$ 1.100,00',
-      received: 'R$ 0,00',
-      pending: 'R$ 1.100,00',
-      status: 'Em aberto',
-      statusColor: 'text-sky-400',
-      statusBg: 'bg-sky-500/15',
-    },
-  ]
+  const navigate = useNavigate()
+  const [search, setSearch] = useState('')
 
-  const debtors = [
-    { name: 'Fulano', product: 'iPhone 13 Pro 128GB', due: '5º dia útil', amount: 'R$ 2.500,00' },
-    { name: 'Beltrano', product: 'Monitor LG 27"', due: '5º dia útil', amount: 'R$ 1.100,00' },
-  ]
+  const filteredSales = useMemo(() => {
+    const normalizedSearch = search.trim().toLowerCase()
+
+    if (!normalizedSearch) return salesMock
+
+    return salesMock.filter((sale) => {
+      return (
+        sale.product.toLowerCase().includes(normalizedSearch) ||
+        sale.category.toLowerCase().includes(normalizedSearch) ||
+        sale.customer.toLowerCase().includes(normalizedSearch) ||
+        sale.status.toLowerCase().includes(normalizedSearch) ||
+        sale.date.toLowerCase().includes(normalizedSearch)
+      )
+    })
+  }, [search])
+
+  const summary = useMemo(() => {
+    const totalSold = salesMock.reduce((acc, sale) => acc + sale.total, 0)
+    const totalReceived = salesMock.reduce((acc, sale) => acc + sale.received, 0)
+    const totalPending = salesMock.reduce((acc, sale) => acc + sale.pending, 0)
+
+    return {
+      totalSales: salesMock.length,
+      totalSold,
+      totalReceived,
+      totalPending,
+    }
+  }, [])
+
+  const debtors = useMemo(() => {
+    return salesMock
+      .filter((sale) => sale.pending > 0)
+      .map((sale) => ({
+        id: sale.id,
+        name: sale.customer,
+        product: sale.product,
+        due: '5º dia útil',
+        amount: sale.pending,
+      }))
+  }, [])
 
   return (
     <div className="space-y-6">
@@ -79,7 +155,7 @@ export function SalesPage() {
                   Recebido
                 </p>
                 <p className="mt-1 text-lg font-semibold text-white">
-                  R$ 5.200,00
+                  {formatCurrency(summary.totalReceived)}
                 </p>
               </div>
 
@@ -88,7 +164,7 @@ export function SalesPage() {
                   Pendente
                 </p>
                 <p className="mt-1 text-lg font-semibold text-white">
-                  R$ 3.600,00
+                  {formatCurrency(summary.totalPending)}
                 </p>
               </div>
 
@@ -126,7 +202,9 @@ export function SalesPage() {
           <div className="flex items-start justify-between gap-4">
             <div>
               <p className="text-sm text-slate-400">Vendas registradas</p>
-              <h3 className="mt-2 text-[2rem] font-bold leading-none text-white">3</h3>
+              <h3 className="mt-2 text-[2rem] font-bold leading-none text-white">
+                {summary.totalSales}
+              </h3>
             </div>
 
             <div className="rounded-2xl bg-sky-500/15 p-2.5 text-sky-400">
@@ -144,7 +222,9 @@ export function SalesPage() {
           <div className="flex items-start justify-between gap-4">
             <div>
               <p className="text-sm text-slate-400">Valor vendido</p>
-              <h3 className="mt-2 text-[2rem] font-bold leading-none text-white">R$ 8.800,00</h3>
+              <h3 className="mt-2 text-[2rem] font-bold leading-none text-white">
+                {formatCurrency(summary.totalSold)}
+              </h3>
             </div>
 
             <div className="rounded-2xl bg-violet-500/15 p-2.5 text-violet-400">
@@ -162,7 +242,9 @@ export function SalesPage() {
           <div className="flex items-start justify-between gap-4">
             <div>
               <p className="text-sm text-slate-400">Pendente de receber</p>
-              <h3 className="mt-2 text-[2rem] font-bold leading-none text-white">R$ 3.600,00</h3>
+              <h3 className="mt-2 text-[2rem] font-bold leading-none text-white">
+                {formatCurrency(summary.totalPending)}
+              </h3>
             </div>
 
             <div className="rounded-2xl bg-amber-500/15 p-2.5 text-amber-400">
@@ -190,86 +272,123 @@ export function SalesPage() {
                 />
                 <input
                   type="text"
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
                   placeholder="Buscar venda..."
                   className="w-full rounded-2xl border border-white/10 bg-white/5 py-2.5 pl-10 pr-4 text-sm text-white outline-none placeholder:text-slate-500 focus:border-blue-400/40 lg:w-[220px]"
                 />
               </div>
 
-              <button className="inline-flex items-center justify-center gap-2 rounded-2xl border border-blue-400/30 bg-blue-500/20 px-4 py-2.5 text-sm font-medium text-blue-300 transition hover:bg-blue-500/30">
+              <PrimaryButton
+                className="inline-flex items-center justify-center gap-2 px-4 py-2.5"
+                onClick={() => navigate(routes.newSale)}
+              >
                 <Plus size={16} />
                 Nova venda
-              </button>
+              </PrimaryButton>
             </div>
           }
         >
           <div className="grid gap-4">
-            {sales.map((sale) => (
-              <article
-                key={sale.id}
-                className="rounded-3xl border border-white/10 bg-white/5 p-5 transition hover:border-white/20 hover:bg-white/[0.07]"
-              >
-                <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
-                  <div className="space-y-3">
-                    <div className="flex flex-wrap items-center gap-3">
-                      <h3 className="text-xl font-semibold text-white">{sale.product}</h3>
-                      <span
-                        className={`inline-flex rounded-full px-3 py-1 text-xs font-medium ${sale.statusBg} ${sale.statusColor}`}
-                      >
-                        {sale.status}
-                      </span>
-                    </div>
+            {filteredSales.length > 0 ? (
+              filteredSales.map((sale) => {
+                const statusStyles = getStatusStyles(sale.status)
 
-                    <div className="flex items-center gap-2 text-sm text-slate-300">
-                      <UserRound size={15} />
-                      <span>Vendido para {sale.customer}</span>
-                    </div>
+                return (
+                  <article
+                    key={sale.id}
+                    className="rounded-3xl border border-white/10 bg-white/5 p-5 transition hover:border-white/20 hover:bg-white/[0.07]"
+                  >
+                    <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
+                      <div className="space-y-3">
+                        <div className="flex flex-wrap items-center gap-3">
+                          <h3 className="text-xl font-semibold text-white">{sale.product}</h3>
+                          <span
+                            className={`inline-flex rounded-full px-3 py-1 text-xs font-medium ${statusStyles.bgColor} ${statusStyles.textColor}`}
+                          >
+                            {sale.status}
+                          </span>
+                        </div>
 
-                    <p className="text-sm text-slate-400">Data da venda: {sale.date}</p>
-                  </div>
+                        <div className="flex items-center gap-2 text-sm text-slate-300">
+                          <UserRound size={15} />
+                          <span>Vendido para {sale.customer}</span>
+                        </div>
 
-                  <div className="grid gap-3 sm:grid-cols-3 xl:min-w-[420px]">
-                    <div className="rounded-2xl bg-white/5 px-4 py-3">
-                      <p className="text-sm text-slate-400">Valor total</p>
-                      <p className="mt-2 font-semibold text-white">{sale.total}</p>
-                    </div>
+                        <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm text-slate-400">
+                          <span>Categoria: {sale.category}</span>
+                          <span>Data da venda: {sale.date}</span>
+                        </div>
+                      </div>
 
-                    <div className="rounded-2xl bg-white/5 px-4 py-3">
-                      <p className="text-sm text-slate-400">Recebido</p>
-                      <p className="mt-2 font-semibold text-emerald-400">{sale.received}</p>
-                    </div>
+                      <div className="grid gap-3 sm:grid-cols-3 xl:min-w-[420px]">
+                        <div className="rounded-2xl bg-white/5 px-4 py-3">
+                          <p className="text-sm text-slate-400">Valor total</p>
+                          <p className="mt-2 font-semibold text-white">
+                            {formatCurrency(sale.total)}
+                          </p>
+                        </div>
 
-                    <div className="rounded-2xl bg-white/5 px-4 py-3">
-                      <p className="text-sm text-slate-400">Pendente</p>
-                      <p className="mt-2 font-semibold text-amber-400">{sale.pending}</p>
+                        <div className="rounded-2xl bg-white/5 px-4 py-3">
+                          <p className="text-sm text-slate-400">Recebido</p>
+                          <p className="mt-2 font-semibold text-emerald-400">
+                            {formatCurrency(sale.received)}
+                          </p>
+                        </div>
+
+                        <div className="rounded-2xl bg-white/5 px-4 py-3">
+                          <p className="text-sm text-slate-400">Pendente</p>
+                          <p className="mt-2 font-semibold text-amber-400">
+                            {formatCurrency(sale.pending)}
+                          </p>
+                        </div>
+                      </div>
                     </div>
-                  </div>
-                </div>
-              </article>
-            ))}
+                  </article>
+                )
+              })
+            ) : (
+              <div className="rounded-3xl border border-dashed border-white/10 bg-white/5 p-8 text-center">
+                <p className="text-base font-medium text-white">
+                  Nenhuma venda encontrada
+                </p>
+                <p className="mt-2 text-sm text-slate-400">
+                  Tente buscar por produto, cliente, categoria, status ou data.
+                </p>
+              </div>
+            )}
           </div>
         </SectionCard>
 
         <SectionCard title="Devedores / cobranças">
           <div className="space-y-3">
-            {debtors.map((debtor) => (
-              <div
-                key={`${debtor.name}-${debtor.product}`}
-                className="rounded-2xl border border-white/10 bg-white/5 px-4 py-4"
-              >
-                <p className="font-semibold text-white">{debtor.name}</p>
-                <p className="mt-1 text-sm text-slate-400">{debtor.product}</p>
+            {debtors.length > 0 ? (
+              debtors.map((debtor) => (
+                <div
+                  key={debtor.id}
+                  className="rounded-2xl border border-white/10 bg-white/5 px-4 py-4"
+                >
+                  <p className="font-semibold text-white">{debtor.name}</p>
+                  <p className="mt-1 text-sm text-slate-400">{debtor.product}</p>
 
-                <div className="mt-3 flex items-center justify-between text-sm">
-                  <span className="text-slate-400">Próxima cobrança</span>
-                  <span className="text-slate-200">{debtor.due}</span>
-                </div>
+                  <div className="mt-3 flex items-center justify-between text-sm">
+                    <span className="text-slate-400">Próxima cobrança</span>
+                    <span className="text-slate-200">{debtor.due}</span>
+                  </div>
 
-                <div className="mt-2 flex items-center justify-between text-sm">
-                  <span className="text-slate-400">Valor pendente</span>
-                  <span className="font-medium text-amber-400">{debtor.amount}</span>
+                  <div className="mt-2 flex items-center justify-between text-sm">
+                    <span className="text-slate-400">Valor pendente</span>
+                    <span className="font-medium text-amber-400">
+                      {formatCurrency(debtor.amount)}
+                    </span>
+                  </div>
                 </div>
+              ))
+            ) : (
+              <div className="rounded-2xl border border-white/10 bg-white/5 px-4 py-6 text-center">
+                <p className="text-sm text-slate-400">Nenhuma cobrança pendente no momento.</p>
               </div>
-            ))}
+            )}
           </div>
         </SectionCard>
       </section>

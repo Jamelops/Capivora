@@ -8,6 +8,7 @@ import { RegisterPage } from '@/features/auth/pages/register-page'
 import { DashboardPage } from '@/features/dashboard/pages/dashboard-page'
 import { TransactionsPage } from '@/features/finances/pages/transactions-page'
 import { SalesPage } from '@/features/sales/pages/sales-page'
+import { NewSalePage } from '@/features/sales/pages/new-sale-page'
 import { IphonePurchasesPage } from '@/features/iphone-purchases/pages/iphone-purchases-page'
 import { NewIphonePurchasePage } from '@/features/iphone-purchases/pages/new-iphone-purchase-page'
 
@@ -26,6 +27,10 @@ const appChildren = [
         {
           path: routes.sales,
           element: <SalesPage />,
+        },
+        {
+          path: routes.newSale,
+          element: <NewSalePage />,
         },
       ]
     : []),
