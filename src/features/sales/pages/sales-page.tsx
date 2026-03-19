@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { salesMock, type SaleStatus } from '@/features/sales/pages/data/sales.mock'
 import {
   ArrowUpRight,
   BadgeDollarSign,
